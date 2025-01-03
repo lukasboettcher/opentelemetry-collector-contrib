@@ -27,7 +27,6 @@ func (ts *ContextSource) Get(ctx context.Context) (string, error) {
 	if strings.HasPrefix(ts.Key, authPrefix) {
 		attrName := strings.TrimPrefix(ts.Key, authPrefix)
 		attr := cl.Auth.GetAttribute(attrName)
-
 		switch a := attr.(type) {
 		case string:
 			ss = []string{a}
