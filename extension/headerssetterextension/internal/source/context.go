@@ -6,6 +6,7 @@ package source // import "github.com/open-telemetry/opentelemetry-collector-cont
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"go.opentelemetry.io/collector/client"
 )
@@ -18,8 +19,22 @@ type ContextSource struct {
 }
 
 func (ts *ContextSource) Get(ctx context.Context) (string, error) {
+	const authPrefix = "auth."
+
 	cl := client.FromContext(ctx)
 	ss := cl.Metadata.Get(ts.Key)
+
+	if strings.HasPrefix(ts.Key, authPrefix) {
+		attrName := strings.TrimPrefix(ts.Key, authPrefix)
+		attr := cl.Auth.GetAttribute(attrName)
+
+		switch a := attr.(type) {
+		case string:
+			ss = []string{a}
+		case []string:
+			ss = a
+		}
+	}
 
 	if len(ss) == 0 {
 		return ts.DefaultValue, nil
